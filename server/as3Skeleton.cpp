@@ -28,27 +28,47 @@
 #include <iostream>
 using namespace std;
 
-as3Skeleton::as3Skeleton() {
-	this->size = 4 + 12 * 15;
-	this->skel = new unsigned char[this->size];
-	this->user_id = this->skel;
-	this->head = this->skel+4+12*0;
-	this->neck = this->skel+4+12*1;
-	this->lshoulder =this->skel+4+12*2;
-	this->lelbow =this->skel+4+12*3;
-	this->lhand =this->skel+4+12*4;
-	this->rshoulder =this->skel+4+12*5;
-	this->relbow =this->skel+4+12*6;
-	this->rhand =this->skel+4+12*7;
-	this->torso =this->skel+4+12*8;
-	this->lhip =this->skel+4+12*9;
-	this->lknee =this->skel+4+12*10;
-	this->lfoot =this->skel+4+12*11;
-	this->rhip =this->skel+4+12*12;
-	this->rknee =this->skel+4+12*13;
-	this->rfoot =this->skel+4+12*14;
+As3Skeleton::As3Skeleton() {
+	int count = 0;
+
+	this->size		= sizeof(int) + (3 * sizeof(float)) * As3Skeleton::R_FOOT * 4;
+	this->skel		= new unsigned char[this->size];
+	this->isTracking = false;
 }
 
-as3Skeleton::~as3Skeleton() {
+void As3Skeleton::setValues(const unsigned int id, const float x, const float y, const float z,
+			const float xrotx, const float xroty, const float xrotz,
+			const float yrotx, const float yroty, const float yrotz,
+			const float zrotx, const float zroty, const float zrotz)
+{
+	int relOffset = sizeof(int) + (OFFSET * (id-1));
+	unsigned char *loc = &this->skel[relOffset];
+	int count = 0;
+
+	memcpy(loc+count, &x, 4); count += 4;
+	memcpy(loc+count, &y, 4); count += 4;
+	memcpy(loc+count, &z, 4); count += 4;
+
+	memcpy(loc+count, &xrotx, 4); count += 4;
+	memcpy(loc+count, &xroty, 4); count += 4;
+	memcpy(loc+count, &xrotz, 4); count += 4;
+
+	memcpy(loc+count, &yrotx, 4); count += 4;
+	memcpy(loc+count, &yroty, 4); count += 4;
+	memcpy(loc+count, &yrotz, 4); count += 4;
+
+	memcpy(loc+count, &zrotx, 4); count += 4;
+	memcpy(loc+count, &zroty, 4); count += 4;
+	memcpy(loc+count, &zrotz, 4); count += 4;
+}
+
+void As3Skeleton::setUserId(const int userId)
+{
+	int relOffset = 0;
+	unsigned char *loc = &this->skel[relOffset];
+	memcpy(loc, &userId, sizeof(int));
+}
+
+As3Skeleton::~As3Skeleton() {
 	delete [] skel;
 }

@@ -24,29 +24,44 @@
  * either License.
  */
 
-class as3Skeleton {
+#pragma once
+
+class As3Skeleton {
   	public:
+		enum parts {
+			USER_ID,
+			HEAD,
+			NECK,
+			TORSO,
+	
+			L_SHOULDER,
+			L_ELBOW,
+			L_HAND,
+			L_HIP,
+			L_KNEE,
+			L_FOOT,
+
+			R_SHOULDER,
+			R_ELBOW,
+			R_HAND,
+			R_HIP,
+			R_KNEE,
+			R_FOOT
+		};
+
 		int size;
 		unsigned char *skel;
-		unsigned char *user_id;
-		unsigned char *head;
-		unsigned char *neck;
-		unsigned char *lshoulder;
-		unsigned char *lelbow;
-		unsigned char *lhand;
-		unsigned char *rshoulder;
-		unsigned char *relbow;
-		unsigned char *rhand;
-		unsigned char *torso;
-		unsigned char *lhip;
-		unsigned char *lknee;
-		unsigned char *lfoot;
-		unsigned char *rhip;
-		unsigned char *rknee;
-		unsigned char *rfoot;
-		as3Skeleton();
-		~as3Skeleton();
-		void update();
+		bool isTracking;
+		
+		As3Skeleton();
+		~As3Skeleton();
+		void setValues(const unsigned int id, const float x, const float y, const float z,
+			const float xrotx, const float xroty, const float xrotz,
+			const float yrotx, const float yroty, const float yrotz,
+			const float zrotx, const float zroty, const float zrotz);
+		void setUserId(const int userId);
+		void debug(unsigned char *s);
 	private:
+		static const int OFFSET = (3 * sizeof(float)) * 4;
 		//
 };

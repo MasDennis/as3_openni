@@ -105,13 +105,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="as3Network.cpp" />
     <ClCompile Include="as3Skeleton.cpp" />
+    <ClCompile Include="KinectController.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="as3Network.h" />
     <ClInclude Include="as3Skeleton.h" />
+    <ClInclude Include="KinectController.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
