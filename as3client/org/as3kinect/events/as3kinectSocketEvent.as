@@ -23,24 +23,23 @@
  * Binary distributions must follow the binary distribution requirements of
  * either License.
  */
- 
+
 package org.as3kinect.events
 {
 	import flash.events.Event;
-	
-		public class as3kinectSocketEvent extends Event
-		{
-			
-		public static const ONCONNECT:String = "ONCONNECT";
-		public static const ONDATA:String = "ONDATA";
-		public static const ONERROR:String = "ONERROR";
-		
-		public var data:*;
-		
-		public function as3kinectSocketEvent(type:String, data:*)
+
+	public class AS3KinectSocketEvent extends Event
+	{
+		public static const ON_CONNECT 		: String = "onConnect";
+		public static const ON_DATA 		: String = "onData";
+		public static const ON_ERROR 		: String = "onError";
+
+		public var data : *;
+
+		public function AS3KinectSocketEvent( type : String, data : * )
 		{
 			this.data = data;
-			super(type);
+			super( type );
 		}
 	}
 }

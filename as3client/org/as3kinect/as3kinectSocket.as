@@ -1,7 +1,7 @@
 ﻿/*
- * This file is part of the as3kinect Project. http://www.as3kinect.org
+ * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
  *
- * Copyright (c) 2010 individual as3kinect contributors. See the CONTRIB file
+ * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
  *
  * This code is licensed to you under the terms of the Apache License, version
@@ -24,123 +24,115 @@
  * either License.
  */
 
- 
- package org.as3kinect {
-	 
-	import org.as3kinect.as3kinect;
-	import org.as3kinect.events.as3kinectSocketEvent;
+package org.as3kinect
+{
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
-	
+	import flash.events.ProgressEvent;
 	import flash.net.Socket;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	
+	import org.as3kinect.events.AS3KinectSocketEvent;
 
 	/**
-	 * as3kinectSocket class recieves Kinect data from the as3kinect driver.
+	 * AS3KinectSocket class recieves Kinect data from the AS3Kinect driver.
 	 */
-	public class as3kinectSocket extends EventDispatcher
+	public class AS3KinectSocket extends EventDispatcher
 	{
-		private static var _instance:as3kinectSocket;
-		private static var _singleton_lock:Boolean = false;
+		private static var instanceCount : uint = 0;
 		
-		private var _first_byte:Number;
-		private var _second_byte:Number;
-		private var _packet_size:Number;
-		private var _socket:Socket;
-		private var _buffer:ByteArray;
-		private var _data_obj:Object;
-		private var _port:Number;
+		private var firstByte : Number;
+		private var secondByte : Number;
+		private var packetSize : Number;
+		private var socket : Socket;
+		private var buffer : ByteArray;
+		private var dataObj : Object;
+		private var port : Number;
 
-		public function as3kinectSocket()
-		{		
-			if ( !_singleton_lock ) throw new Error( 'Use as3kinectSocket.instance' );
-			_socket = new Socket();
-			_buffer = new ByteArray();
-			_data_obj = new Object();
-
-			_socket.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
-			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
-			_socket.addEventListener(Event.CONNECT, onSocketConnect);
-		}
-		
-		public function connect(host:String = 'localhost', port:uint = 6001):void
+		public function AS3KinectSocket()
 		{
-			_port = port;
-			_packet_size = 0;
-			if (!this.connected) 
-				_socket.connect(host, port);
+			if( instanceCount != 0 )
+				throw new Error("Only one instance of AS3KinectSocket is allowed");
+			instanceCount++;
+			socket = new Socket();
+			buffer = new ByteArray();
+			dataObj = new Object();
+
+			socket.addEventListener( ProgressEvent.SOCKET_DATA, onSocketData );
+			socket.addEventListener( IOErrorEvent.IO_ERROR, onSocketError );
+			socket.addEventListener( Event.CONNECT, onSocketConnect );
+		}
+
+		public function connect( host : String = 'localhost', port : uint = 6001 ) : void
+		{
+			port = port;
+			packetSize = 0;
+			if ( !this.connected )
+				socket.connect( host, port );
 			else
-				dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONCONNECT, null));
-		}
-		
-		public function get connected():Boolean
-		{
-			return _socket.connected;
-		}
-		
-		public function close():void
-		{
-			_socket.close();
-		}
-		
-		public function sendCommand(data:ByteArray):int{
-			if(data.length == as3kinect.COMMAND_SIZE){
-				_socket.writeBytes(data, 0, as3kinect.COMMAND_SIZE);
-				_socket.flush();
-				return as3kinect.SUCCESS;
-			} else {
-				throw new Error( 'Incorrect data size (' + data.length + '). Expected: ' + as3kinect.COMMAND_SIZE);
-				return as3kinect.ERROR;
-			}
-		}
-		
-		private function onSocketData(event:ProgressEvent):void
-		{
-			if(_socket.bytesAvailable > 0) {
-				if(_packet_size == 0) {
-					_socket.endian = Endian.LITTLE_ENDIAN;
-					_first_byte = _socket.readByte();
-					_second_byte = _socket.readByte();
-					_packet_size = _socket.readInt();
-				}
-				if(_socket.bytesAvailable >= _packet_size && _packet_size != 0){
-					_socket.readBytes(_buffer, 0, _packet_size);
-					_buffer.endian = Endian.LITTLE_ENDIAN;
-					_buffer.position = 0;
-					_data_obj.first = _first_byte;
-					_data_obj.second = _second_byte;
-					_data_obj.buffer = _buffer;
-					_packet_size = 0;
-					dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONDATA, _data_obj));
-				}
-			}
-		}
-		
-		private function onSocketError(event:IOErrorEvent):void{
-			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONERROR, null));
-		}
-		
-		private function onSocketConnect(event:Event):void{
-			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONCONNECT, null));
+				dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_CONNECT, null ));
 		}
 
-		public function set instance(instance:as3kinectSocket):void 
+		public function get connected() : Boolean
 		{
-			throw new Error('as3kinectSocket.instance is read-only');
+			return socket.connected;
 		}
-		
-		public static function get instance():as3kinectSocket 
+
+		public function close() : void
 		{
-			if ( _instance == null )
+			socket.close();
+		}
+
+		public function sendCommand( data : ByteArray ) : int
+		{
+			if ( data.length == AS3Kinect.COMMAND_SIZE )
 			{
-				_singleton_lock = true;
-				_instance = new as3kinectSocket();
-				_singleton_lock = false;
+				socket.writeBytes( data, 0, AS3Kinect.COMMAND_SIZE );
+				socket.flush();
+				return AS3Kinect.SUCCESS;
 			}
-			return _instance;
+			else
+			{
+				throw new Error( 'Incorrect data size (' + data.length + '). Expected: ' + AS3Kinect.COMMAND_SIZE );
+				return AS3Kinect.ERROR;
+			}
+		}
+
+		private function onSocketData( event : ProgressEvent ) : void
+		{
+			if ( socket.bytesAvailable > 0 )
+			{
+				if ( packetSize == 0 )
+				{
+					socket.endian = Endian.LITTLE_ENDIAN;
+					firstByte = socket.readByte();
+					secondByte = socket.readByte();
+					packetSize = socket.readInt();
+				}
+				if ( socket.bytesAvailable >= packetSize && packetSize != 0 )
+				{
+					socket.readBytes( buffer, 0, packetSize );
+					buffer.endian = Endian.LITTLE_ENDIAN;
+					buffer.position = 0;
+					dataObj.first = firstByte;
+					dataObj.second = secondByte;
+					dataObj.buffer = buffer;
+					packetSize = 0;
+					dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_DATA, dataObj ));
+				}
+			}
+		}
+
+		private function onSocketError( event : IOErrorEvent ) : void
+		{
+			dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_ERROR, null ));
+		}
+
+		private function onSocketConnect( event : Event ) : void
+		{
+			dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_CONNECT, null ));
 		}
 	}
 }

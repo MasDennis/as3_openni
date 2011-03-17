@@ -1,7 +1,7 @@
 ﻿/*
- * This file is part of the as3kinect Project. http://www.as3kinect.org
+ * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
  *
- * Copyright (c) 2010 individual as3kinect contributors. See the CONTRIB file
+ * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
  *
  * This code is licensed to you under the terms of the Apache License, version
@@ -24,43 +24,39 @@
  * either License.
  */
 
- package org.as3kinect {
-	
-	import org.as3kinect.as3kinect;
-	import org.as3kinect.as3kinectSocket;
-	import org.as3kinect.as3kinectDepth;
-	import org.as3kinect.as3kinectSkeleton;
-	import org.as3kinect.events.as3kinectSocketEvent;
-	import org.as3kinect.events.as3kinectWrapperEvent;
-	
-	import flash.utils.ByteArray;
-	import flash.display.BitmapData;
-	import flash.display.Bitmap;
-	import flash.geom.Rectangle;
+package org.as3kinect
+{
 	import flash.events.EventDispatcher;
 	import flash.text.TextField;
+	import flash.utils.ByteArray;
 	
-	public class as3kinectWrapper extends EventDispatcher {
+	import org.as3kinect.events.AS3KinectSocketEvent;
+	import org.as3kinect.events.AS3KinectWrapperEvent;
 
-		private var _socket:as3kinectSocket;
-		private var _data:ByteArray;
-		private var _console:TextField;
-		private var _debugging:Boolean = false;
-		private var user_id:Number;
-		
-		public var depth:as3kinectDepth;
-		public var skel:as3kinectSkeleton;
+	public class AS3KinectWrapper extends EventDispatcher
+	{
 
-		public function as3kinectWrapper() {
-			depth = new as3kinectDepth();			
-			skel = new as3kinectSkeleton();
-			/* Init socket objects */
-			_socket = as3kinectSocket.instance;
-			_socket.connect(as3kinect.SERVER_IP, as3kinect.SOCKET_PORT);
-			_socket.addEventListener(as3kinectSocketEvent.ONDATA, dataReceived);
-			
-			/* Init data out buffer */
-			_data = new ByteArray();
+		private var socket 			: AS3KinectSocket;
+		private var data 			: ByteArray;
+		private var userId 			: Number;
+
+		public var depthBuffer 		: AS3KinectDepth;
+		public var depthImageBuffer	: AS3KinectDepthImage;
+		public var skeletonBuffer 	: AS3KinectSkeleton;
+		public var colorBuffer		: AS3KinectColor;
+
+		public function AS3KinectWrapper()
+		{
+			socket = new AS3KinectSocket();
+			socket.connect( AS3Kinect.SERVER_IP, AS3Kinect.SOCKET_PORT );
+			socket.addEventListener( AS3KinectSocketEvent.ON_DATA, dataReceivedHandler );
+
+			depthBuffer = new AS3KinectDepth( socket );
+			depthImageBuffer = new AS3KinectDepthImage( socket );
+			skeletonBuffer = new AS3KinectSkeleton( socket );
+			colorBuffer = new AS3KinectColor( socket );
+
+			data = new ByteArray();
 		}
 
 		/*
@@ -85,76 +81,113 @@
 		 *  			6 -> Calibration failed for user
 		 *
 		 */
-		private function dataReceived(event:as3kinectSocketEvent):void{
+		private function dataReceivedHandler( event : AS3KinectSocketEvent ) : void
+		{
 			// Send ByteArray to position 0
 			event.data.buffer.position = 0;
-			switch (event.data.first) {
+
+			switch ( event.data.first )
+			{
 				case 0: //Camera
-					switch (event.data.second) {
+					switch ( event.data.second )
+					{
 						case 0: //Depth received
-							dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_DEPTH, event.data.buffer));
-							depth.busy = false;
-						break;
+							var depthEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_DEPTH );
+							depthEvent.depthBuffer = event.data.buffer;
+							dispatchEvent( depthEvent );
+							depthBuffer.busy = false;
+							break;
 						case 1: //Video received
-							//dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_DEPTH, event.data));
-						break;
+							var colorEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_COLOR );
+							colorEvent.colorBuffer = event.data.buffer;
+							dispatchEvent( colorEvent );
+							colorBuffer.busy = false;
+							break;
 						case 2: //SKEL received
-							skel.processSkeleton(event.data.buffer);
-							dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_SKEL, skel.skeletons));
-							skel.busy = false;
-						break;
+							var skelEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_SKEL );
+							skeletonBuffer.processSkeleton( event.data.buffer );
+							skelEvent.skeletons = skeletonBuffer.skeletons;
+							dispatchEvent( skelEvent );
+							skeletonBuffer.busy = false;
+							break;
+						case 3: //Depth image received
+							var depthImageEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_DEPTH_IMAGE );
+							depthImageEvent.depthImageBuffer = event.data.buffer;
+							dispatchEvent( depthImageEvent );
+							depthImageBuffer.busy = false;
+							break;
 					}
-				break;
+					break;
 				case 1: //Motor
-				break;
+					break;
 				case 2: //Mic
-				break;
+					break;
 				case 3: //Server
-					switch (event.data.second) {
+					switch ( event.data.second )
+					{
 						case 0: //Debug received
-							if(_debugging) _console.appendText(event.data.buffer.toString());
-						break;
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, event.data.buffer.toString());
+							}
+							break;
 						case 1: //Got user
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Got user: " + user_id + "\n");
-						break;
+							userId = event.data.buffer.readInt();
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Got user: " + userId );
+							}
+							break;
 						case 2: //Lost user
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Lost user: " + user_id + "\n");
-							skel.tracked_users.pop();
-						break;
+							userId = event.data.buffer.readInt();
+							skeletonBuffer.trackedUsers.pop();
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Lost user: " + userId );
+							}
+							break;
 						case 3: //Pose detected
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Pose detected for user: " + user_id + "\n");
-						break;
+							userId = event.data.buffer.readInt();
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Pose detected for user: " + userId );
+							}
+							break;
 						case 4: //Calibrating
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibrating user: " + user_id + "\n");
-						break;
+							userId = event.data.buffer.readInt();
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibrating user: " + userId );
+							}
+							break;
 						case 5: //Calibration complete
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibration complete for user: " + user_id + "\n");
-							skel.tracked_users.push(user_id);
-						break;
+							userId = event.data.buffer.readInt();
+							skeletonBuffer.trackedUsers.push( userId );
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibration complete for user: " + userId );
+							}
+							break;
 						case 6: //Calibration failed
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibration failed for user: " + user_id + "\n");
-						break;
+							userId = event.data.buffer.readInt();
+							CONFIG::debugging
+							{
+								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibration failed for user: " + userId );
+							}
+							break;
 					}
-				break;
+					break;
 			}
 			// Clear ByteArray after used
 			event.data.buffer.clear();
 		}
-		
+
 		/*
 		 * Enable log console on TextField
 		 */
-		public function set logConsole(txt:TextField){
-			_debugging = true;
-			_console = txt;
-			_console.text = "=== Started console ===\n";
+		public function set logConsole( txt : TextField ) : void
+		{
+			AS3KinectLogger.textField = txt;
 		}
 	}
-	
 }

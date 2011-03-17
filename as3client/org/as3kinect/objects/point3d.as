@@ -1,7 +1,7 @@
 ﻿/*
- * This file is part of the as3kinect Project. http://www.as3kinect.org
+ * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
  *
- * Copyright (c) 2010 individual as3kinect contributors. See the CONTRIB file
+ * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
  *
  * This code is licensed to you under the terms of the Apache License, version
@@ -24,21 +24,23 @@
  * either License.
  */
 
- 
-package org.as3kinect.objects {
-	
-	public class point3d {
-		public var x			:	Number;
-		public var y			:	Number;
-		public var z			:	Number;
+package org.as3kinect.objects
+{
+	public class Point3D
+	{
+		public var x : Number;
+		public var y : Number;
+		public var z : Number;
 
-		public function point3d() {
+		public function Point3D()
+		{
 			this.x = 0;
 			this.y = 0;
 			this.z = 0;
 		}
-		
-		public function updatePoint(_x:Number, _y:Number, _z:Number):void {
+
+		public function updatePoint( _x : Number, _y : Number, _z : Number ) : void
+		{
 			this.x = _x;
 			this.y = _y;
 			this.z = _z;

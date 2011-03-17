@@ -1,7 +1,7 @@
 ﻿/*
- * This file is part of the as3kinect Project. http://www.as3kinect.org
+ * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
  *
- * Copyright (c) 2010 individual as3kinect contributors. See the CONTRIB file
+ * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
  *
  * This code is licensed to you under the terms of the Apache License, version
@@ -24,66 +24,76 @@
  * either License.
  */
 
- 
-package org.as3kinect.objects {
-	
-	import org.as3kinect.objects.point3d;
+package org.as3kinect.objects
+{
 	import flash.utils.ByteArray;
-	
-	public class skeleton3d {
-		public var user_id		:	uint;
-		public var head			:	point3d;
-		public var neck			:	point3d;
-		public var l_shoulder	:	point3d;
-		public var l_elbow		:	point3d;
-		public var l_hand		:	point3d;
-		public var r_shoulder	:	point3d;
-		public var r_elbow		:	point3d;
-		public var r_hand		:	point3d;
-		public var torso		:	point3d;
-		public var l_hip		:	point3d;
-		public var l_knee		:	point3d;
-		public var l_foot		:	point3d;
-		public var r_hip		:	point3d;
-		public var r_knee		:	point3d;
-		public var r_foot		:	point3d;
-		
-		public function skeleton3d():void {
-			this.user_id = 0;
-			this.head = new point3d();
-			this.neck = new  point3d();
-			this.l_shoulder = new point3d();
-			this.l_elbow = new  point3d();
-			this.l_hand = new  point3d();
-			this.r_shoulder = new point3d();
-			this.r_elbow = new  point3d();
-			this.r_hand = new  point3d();
-			this.torso = new  point3d();
-			this.l_hip = new  point3d();
-			this.l_knee = new  point3d();
-			this.l_foot = new  point3d();
-			this.r_hip = new  point3d();
-			this.r_knee = new  point3d();
-			this.r_foot = new  point3d();
+
+	public class Skeleton3D
+	{
+		public var userId : uint;
+
+		public var head : Joint3D;
+		public var neck : Joint3D;
+		public var torso : Joint3D;
+
+		public var leftShoulder : Joint3D;
+		public var leftElbow : Joint3D;
+		public var leftHand : Joint3D;
+		public var leftHip : Joint3D;
+		public var leftKnee : Joint3D;
+		public var leftFoot : Joint3D;
+
+		public var rightShoulder : Joint3D;
+		public var rightElbow : Joint3D;
+		public var rightHand : Joint3D;
+		public var rightHip : Joint3D;
+		public var rightKnee : Joint3D;
+		public var rightFoot : Joint3D;
+
+		public function Skeleton3D() : void
+		{
+			userId = 0;
+
+			head = new Joint3D();
+			neck = new Joint3D();
+			torso = new Joint3D();
+
+			leftShoulder = new Joint3D();
+			leftElbow = new Joint3D();
+			leftHand = new Joint3D();
+			leftHip = new Joint3D();
+			leftKnee = new Joint3D();
+			leftFoot = new Joint3D();
+
+			rightShoulder = new Joint3D();
+			rightElbow = new Joint3D();
+			rightHand = new Joint3D();
+			rightHip = new Joint3D();
+			rightKnee = new Joint3D();
+			rightFoot = new Joint3D();
 		}
-		
-		public function updateFromBytes(ba:ByteArray){
-			this.user_id = ba.readInt();
-			this.head.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.neck.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_shoulder.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_elbow.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_hand.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_shoulder.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_elbow.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_hand.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.torso.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_hip.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_knee.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.l_foot.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_hip.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_knee.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
-			this.r_foot.updatePoint(ba.readFloat(), ba.readFloat(), ba.readFloat());
+
+		public function updateFromBytes( ba : ByteArray ) : void
+		{
+			userId = ba.readInt();
+
+			head.updateFromBytes( ba );
+			neck.updateFromBytes( ba );
+			torso.updateFromBytes( ba );
+
+			leftShoulder.updateFromBytes( ba );
+			leftElbow.updateFromBytes( ba );
+			leftHand.updateFromBytes( ba );
+			leftHip.updateFromBytes( ba );
+			leftKnee.updateFromBytes( ba );
+			leftFoot.updateFromBytes( ba );
+
+			rightShoulder.updateFromBytes( ba );
+			rightElbow.updateFromBytes( ba );
+			rightHand.updateFromBytes( ba );
+			rightHip.updateFromBytes( ba );
+			rightKnee.updateFromBytes( ba );
+			rightFoot.updateFromBytes( ba );
 		}
 	}
 }

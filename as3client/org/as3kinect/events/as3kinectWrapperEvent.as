@@ -23,25 +23,30 @@
  * Binary distributions must follow the binary distribution requirements of
  * either License.
  */
- 
+
 package org.as3kinect.events
 {
 	import flash.events.Event;
-	import flash.sampler.StackFrame;
+	import flash.utils.ByteArray;
 	
-		public class as3kinectWrapperEvent extends Event
+	import org.as3kinect.objects.Skeleton3D;
+
+	public class AS3KinectWrapperEvent extends Event
+	{
+		public static const ON_DEPTH 		: String = "onDepth";
+		public static const ON_DEPTH_IMAGE 	: String = "onDepthImage";
+		public static const ON_DEBUG 		: String = "onDebug";
+		public static const ON_SKEL 		: String = "onSkel";
+		public static const ON_COLOR		: String = "onColor";
+
+		public var depthBuffer 		: ByteArray;
+		public var depthImageBuffer	: ByteArray;
+		public var colorBuffer 		: ByteArray;
+		public var skeletons 		: Vector.<Skeleton3D>;
+
+		public function AS3KinectWrapperEvent( type : String )
 		{
-			
-		public static const ON_DEPTH:String = "ON_DEPTH";
-		public static const ON_DEBUG:String = "ON_DEBUG";
-		public static const ON_SKEL:String = "ON_SKEL";
-		
-		public var data:*;
-		
-		public function as3kinectWrapperEvent(type:String, data:*)
-		{
-			this.data = data;
-			super(type);
+			super( type );
 		}
 	}
 }
