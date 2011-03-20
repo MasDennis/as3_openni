@@ -58,6 +58,24 @@ package org.as3kinect
 
 			data = new ByteArray();
 		}
+		
+		public function updateUserGenerator() : void
+		{
+			data.clear();
+			data.writeByte( AS3Kinect.CAMERA_ID );
+			data.writeByte( AS3Kinect.UPDATE_USER_GENERATOR );
+			data.writeInt( 0 );
+			if ( socket.sendCommand( data ) != AS3Kinect.SUCCESS )
+			{
+				trace( 'Data was not complete' );
+			}
+		}
+		
+		public function destroy() : void
+		{
+			socket.removeEventListener( AS3KinectSocketEvent.ON_DATA, dataReceivedHandler );
+			socket.close();
+		}
 
 		/*
 		 * dataReceived from socket (Protocol definition)

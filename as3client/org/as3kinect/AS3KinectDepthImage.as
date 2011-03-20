@@ -16,7 +16,7 @@ package org.as3kinect
 			data.writeInt( 0 );
 			if ( socket.sendCommand( data ) != AS3Kinect.SUCCESS )
 			{
-				throw new Error( 'Data was not complete' );
+				trace( 'Data was not complete' );
 			}
 		}
 	}

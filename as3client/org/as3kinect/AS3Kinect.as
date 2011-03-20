@@ -42,6 +42,7 @@ package org.as3kinect
 		public static const GET_RGB : int = 1;
 		public static const GET_SKEL : int = 2;
 		public static const GET_DEPTH_IMAGE : int = 3;
+		public static const UPDATE_USER_GENERATOR : int = 4;
 
 		public static const IMG_WIDTH : int = 640;
 		public static const IMG_HEIGHT : int = 480;

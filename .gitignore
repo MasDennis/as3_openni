@@ -3,3 +3,5 @@ server/ipch
 *.sdf
 server/openni/*
 server/deps/*
+/server/AS3Kinect3/openni
+/server/AS3Kinect3/deps

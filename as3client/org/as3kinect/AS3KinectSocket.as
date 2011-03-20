@@ -89,8 +89,13 @@ package org.as3kinect
 		{
 			if ( data.length == AS3Kinect.COMMAND_SIZE )
 			{
-				socket.writeBytes( data, 0, AS3Kinect.COMMAND_SIZE );
-				socket.flush();
+				try {
+					socket.writeBytes( data, 0, AS3Kinect.COMMAND_SIZE );
+					socket.flush();
+				} catch( e : Error ) {
+					trace("Operation attempted on invalid socket");
+					return AS3Kinect.ERROR;
+				}
 				return AS3Kinect.SUCCESS;
 			}
 			else
