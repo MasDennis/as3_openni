@@ -230,9 +230,8 @@ void KinectController::getDepthBuffer(unsigned short* depthBuffer, unsigned char
 	depthGenerator.GetMetaData(dmd);
 	depthGenerator.WaitAndUpdateData();
 
-	depthGenerator.GetMetaData(dmd);
 	userGenerator.GetUserPixels(0, smd);
-	unsigned int nValue = 0, nIndex = 0, nX = 0, nY = 0, nNumberOfPoints = 0;
+	unsigned int nValue = 0, colorValue = 0, nIndex = 0, nX = 0, nY = 0, nNumberOfPoints = 0;
 	XnUInt16 nXRes = dmd.XRes(), nYRes = dmd.YRes();
 
 	const XnDepthPixel* pDepth = dmd.Data();
@@ -248,9 +247,12 @@ void KinectController::getDepthBuffer(unsigned short* depthBuffer, unsigned char
 			depthImageBuffer[1] = 0;
 			depthImageBuffer[2] = 0;
 			depthImageBuffer[3] = 0xFF;
+
+			nValue = *pDepth;
+
 			if (drawBackground)
 			{
-				nValue = *pDepth;
+				
 				XnLabel label = *pLabels;
 				XnUInt32 nColorID = label % NUM_COLORS;
 				if (label == 0)
@@ -260,14 +262,16 @@ void KinectController::getDepthBuffer(unsigned short* depthBuffer, unsigned char
 
 				if (nValue != 0)
 				{
-					nValue = 255 - (unsigned int)((float)nValue / (float)MAX_DEPTH * 255.0f); 
-					depthImageBuffer[0] = (unsigned int)(nValue * colors[nColorID][0]);
-					depthImageBuffer[1] = (unsigned int)(nValue * colors[nColorID][1]);
-					depthImageBuffer[2] = (unsigned int)(nValue * colors[nColorID][2]);
+					colorValue = 255 - (unsigned int)((float)nValue / (float)MAX_DEPTH * 255.0f); 
+					depthImageBuffer[0] = (unsigned int)(colorValue * colors[nColorID][0]);
+					depthImageBuffer[1] = (unsigned int)(colorValue * colors[nColorID][1]);
+					depthImageBuffer[2] = (unsigned int)(colorValue * colors[nColorID][2]);
 					depthImageBuffer[3] = 0xFF;
 				}
 			}
+
 			*depthBuffer = nValue;
+
 			pDepth++;
 			pLabels++;
 			depthImageBuffer+=4;
