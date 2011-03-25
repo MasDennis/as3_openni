@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <XnOpenNI.h>
+
 class As3Skeleton {
   	public:
 		enum parts {
@@ -51,7 +53,7 @@ class As3Skeleton {
 
 		int size;
 		unsigned char *skel;
-		bool isTracking;
+		XnBool isTracking;
 		
 		As3Skeleton();
 		~As3Skeleton();

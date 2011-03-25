@@ -33,7 +33,7 @@ As3Skeleton::As3Skeleton() {
 
 	this->size		= sizeof(int) + (3 * sizeof(float)) * As3Skeleton::R_FOOT * 4;
 	this->skel		= new unsigned char[this->size];
-	this->isTracking = false;
+	this->isTracking = FALSE;
 }
 
 void As3Skeleton::setValues(const unsigned int id, const float x, const float y, const float z,
@@ -70,5 +70,5 @@ void As3Skeleton::setUserId(const int userId)
 }
 
 As3Skeleton::~As3Skeleton() {
-	delete [] skel;
+
 }

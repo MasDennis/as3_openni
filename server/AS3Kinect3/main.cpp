@@ -25,7 +25,7 @@ unsigned char imageBuffer[4*640*480];
 
 #define MAX_PACKET_SIZE (640*480*4)+2
 #define MAX_USERS 15
-#define DEFAULT_BUFLEN 512
+#define DEFAULT_BUFLEN 64
 
 unsigned char *msg = new unsigned char[MAX_PACKET_SIZE];
 As3Skeleton* skeletons;
@@ -81,22 +81,21 @@ void sendDepthData(int first, int second, unsigned short *data, int len) {
 
 void* connectionHandler(void* arg)
 {
+	int len = 0;
 	char buff[DEFAULT_BUFLEN];
-	static int len = 0;
 
 	while(isConnected) {
+		len = recv(clientSocket, buff, DEFAULT_BUFLEN, 0);
 		
-		len = recv(clientSocket, buff, sizeof(buff), 0);
-		
-		if(len > 0 && len % 6 == 0){
+		if(len > 0 && len % 8 == 0){
 			//Get the number of commands received
-			int max = len / 6;
+			int max = len / 8;
 			int i;
 			//For each command received
 			for(i = 0; i < max; i++){
-				switch(buff[0 + (i*6)]){
+				switch(buff[0 + (i*8)]){
 					case 0: //CAMERA
-						switch(buff[1 + (i*6)]){
+						switch(buff[1 + (i*8)]){
 							case 0: //GET DEPTH
 								kinect->getDepthBuffer(depthBuffer, depthImageBuffer);
 								sendDepthData(0,0,depthBuffer, sizeof(depthBuffer));
@@ -107,10 +106,10 @@ void* connectionHandler(void* arg)
 							break;
 							case 2: //GET SKEL
 								skeletons = kinect->getSkeletons();
-								for (int i = 0; i <= MAX_USERS; i++)
+								for (int j = 0; j <= MAX_USERS; j++)
 								{
-									if(skeletons[i].isTracking == true)
-										sendMessage(0, 2, skeletons[i].skel, skeletons[i].size);
+									if(skeletons[j].isTracking == FALSE)
+										sendMessage(0, 2, skeletons[j].skel, skeletons[j].size);
 								}
 							break;
 							case 3: //GET DEPTH IMAGE
@@ -128,9 +127,12 @@ void* connectionHandler(void* arg)
 					break;
 				}
 			}
-		} else if(len == -1) {
+		} else {
 			printf("[~] Got bad command (%d)\n", len);
-			isConnected = 0;
+			isConnected = false;
+			kinect->stop();
+			closesocket(clientSocket);
+			break;
 		}
 	}
 
@@ -157,6 +159,7 @@ void* waitForClient(void* arg)
 		
 		isConnected = true;
 		kinect->setClientSocket(clientSocket);
+		kinect->resume();
 
 		if(pthread_create(&connectionThread, NULL, connectionHandler, NULL))
 		{

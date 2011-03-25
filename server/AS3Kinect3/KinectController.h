@@ -21,6 +21,8 @@ public:
 	int initialise();
 	void update();
 	void shutdown();
+	void stop();
+	void resume();
 	XnBool isReady();
 	void getColorBuffer(unsigned char* imgBuffer);
 	void getDepthBuffer(unsigned short* depthBuffer, unsigned char* depthImageBuffer);
@@ -79,14 +81,12 @@ private:
 
 	static void XN_CALLBACK_TYPE User_NewUser(UserGenerator& generator, XnUserID userId, void* pCookie)
 	{
-//		printf("new userrrrrrr\n");
 		KinectController* self = (KinectController*)pCookie;
 		self->detectedNewUser(generator, userId);
 	}
 
 	static void XN_CALLBACK_TYPE User_LostUser(UserGenerator& generator, XnUserID nId, void* pCookie)
 	{
-		//printf("lost userrrrrrr\n");
 		KinectController* self = (KinectController*)pCookie;
 		self->lostUser(generator, nId);
 	}

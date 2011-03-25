@@ -51,7 +51,7 @@ int KinectController::initialise() {
 	nRetVal = context.FindExistingNode(XN_NODE_TYPE_IMAGE, imageGenerator);
 	CHECK_RC(nRetVal, "Find image generator");
 	printf("	[+] Image generator node found\n");
-	/*
+	
 	nRetVal = context.FindExistingNode(XN_NODE_TYPE_GESTURE, gestureGenerator);
 	CHECK_RC(nRetVal, "Find gesture generator");
 	printf("	[+] Gesture generator node found\n");
@@ -59,7 +59,7 @@ int KinectController::initialise() {
 	nRetVal = context.FindExistingNode(XN_NODE_TYPE_HANDS, handsGenerator);
 	CHECK_RC(nRetVal, "Find hands generator");
 	printf("	[+] Hands generator node found\n");
-	*/
+	
 	nRetVal = context.FindExistingNode(XN_NODE_TYPE_USER, userGenerator);
 	CHECK_RC(nRetVal, "Find user generator");
 	printf("	[+] User generator node found\n");
@@ -74,21 +74,8 @@ int KinectController::initialise() {
 
 	imageGenerator.SetPixelFormat(XN_PIXEL_FORMAT_RGB24);
 
-	userGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
-
-	nRetVal = context.StartGeneratingAll();
-	CHECK_RC(nRetVal, "StartGenerating");
-
-	XnCallbackHandle hUserCBs, hCalibrationCBs, hPoseCBs;
-	userGenerator.RegisterUserCallbacks(User_NewUser, User_LostUser, this, hUserCallbacks);
-	userGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(UserCalibration_CalibrationStart, UserCalibration_CalibrationEnd, this, hCalibrationCallbacks);
-	userGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(UserPose_PoseDetected, NULL, this, hPoseCallbacks);
-
-//gestureGenerator.RegisterGestureCallbacks(Gesture_Recognized, Gesture_Progress, this, hGestureCallbacks);
-	//handsGenerator.RegisterHandCallbacks(Hand_Create, Hand_Update, Hand_Destroy, this, hHandsCallbacks); 
-	/*
-	userGenerator.RegisterUserCallbacks(User_NewUser, User_LostUser, this, hUserCallbacks);
-	userGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(UserCalibration_CalibrationStart, UserCalibration_CalibrationEnd, this, hCalibrationCallbacks);
+	gestureGenerator.RegisterGestureCallbacks(Gesture_Recognized, Gesture_Progress, this, hGestureCallbacks);
+	handsGenerator.RegisterHandCallbacks(Hand_Create, Hand_Update, Hand_Destroy, this, hHandsCallbacks); 
 
 	if (userGenerator.GetSkeletonCap().NeedPoseForCalibration())
 	{
@@ -98,19 +85,31 @@ int KinectController::initialise() {
 	}
 
 	userGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
-	*/
-	//nRetVal = context.StartGeneratingAll();
-	//CHECK_RC(nRetVal, "StartGenerating");
+	userGenerator.RegisterUserCallbacks(User_NewUser, User_LostUser, this, hUserCallbacks);
+	userGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(UserCalibration_CalibrationStart, UserCalibration_CalibrationEnd, this, hCalibrationCallbacks);
+
+	nRetVal = context.StartGeneratingAll();
+	CHECK_RC(nRetVal, "StartGenerating");
 
 	//addGestures();
 
 	nRetVal = xnFPSInit(&xnFPS, 30);
-	//CHECK_RC(nRetVal, "FPS Init");
+	CHECK_RC(nRetVal, "FPS Init");
 
 	ready = true;
 	printf("	[+] Kinect Initialized\n\n");
 
 	return 0;
+}
+
+void KinectController::stop()
+{
+	context.StopGeneratingAll();
+}
+
+void KinectController::resume()
+{
+	context.StartGeneratingAll();
 }
 
 void KinectController::update()
@@ -141,26 +140,30 @@ int KinectController::sendData(unsigned char *buffer, int length){
 }
 
 void KinectController::sendMessage(const char *data) {
-	std::string _msg = data;
-	int len = sizeof(_msg);
-	int first = 3;
-	int second = 0;
-	int m_len = 1 + 1 + sizeof(int);
-	memcpy(msg, &first, 1);
-	memcpy(msg + 1, &second, 1);
-	memcpy(msg + 2, &len, sizeof(int));
-	memcpy(msg + m_len, data, len);
-	sendData(msg,len+m_len);
+	if(clientSocket != INVALID_SOCKET) {
+		std::string _msg = data;
+		int len = sizeof(_msg);
+		int first = 3;
+		int second = 0;
+		int m_len = 1 + 1 + sizeof(int);
+		memcpy(msg, &first, 1);
+		memcpy(msg + 1, &second, 1);
+		memcpy(msg + 2, &len, sizeof(int));
+		memcpy(msg + m_len, data, len);
+		sendData(msg,len+m_len);
+	}
 }
 
 void KinectController::sendMessage(int first, int second, int value) {
-	unsigned char buff[2 + sizeof(int) * 2];
-	buff[0] = first;
-	buff[1] = second;
-	int size = sizeof(int);
-	memcpy(buff+2, &size, sizeof(int));
-	memcpy(buff+6, &value, sizeof(int));
-	sendData(buff, 2 + sizeof(int) * 2);
+	if(clientSocket != INVALID_SOCKET) {
+		unsigned char buff[2 + sizeof(int) * 2];
+		buff[0] = first;
+		buff[1] = second;
+		int size = sizeof(int);
+		memcpy(buff+2, &size, sizeof(int));
+		memcpy(buff+6, &value, sizeof(int));
+		sendData(buff, 2 + sizeof(int) * 2);
+	}
 }
 
 void KinectController::getJointData(XnUserID player, XnSkeletonJoint eJoint1, const int &skelId, const int &jointId)
@@ -181,7 +184,7 @@ void KinectController::getJointData(XnUserID player, XnSkeletonJoint eJoint1, co
 	}
 	XnPoint3D pt[1];
 	pt[0] = joint1.position;
-	depthGenerator.ConvertRealWorldToProjective(1, pt, pt);
+	
 	float _x, _y, _z;
 	_x = pt[0].X;
 	_y = pt[0].Y;
@@ -297,7 +300,7 @@ As3Skeleton* KinectController::getSkeletons()
 			int index = aUsers[i] - 1;
 			
 			skeletons[index].setUserId(aUsers[i]);
-			//memcpy(skeletons[index].user_id, &aUsers[i], 4);
+
 			getJointData(aUsers[i], XN_SKEL_HEAD, index, As3Skeleton::HEAD);
 			getJointData(aUsers[i], XN_SKEL_NECK, index, As3Skeleton::NECK);
 			getJointData(aUsers[i], XN_SKEL_TORSO, index, As3Skeleton::TORSO);
@@ -373,7 +376,8 @@ void KinectController::lostUser(UserGenerator& generator, XnUserID nId)
 {
 	printf("Lost user: %d\n", nId);
 	sendMessage(3,2,nId);
-	skeletons[nId-1].~As3Skeleton();
+	As3Skeleton skel = skeletons[nId-1];
+	skel.isTracking = false;
 }
 
 void KinectController::poseDetected(PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId)
@@ -394,12 +398,14 @@ void KinectController::calibrationEnded(SkeletonCapability& capability, XnUserID
 {
 	if (bSuccess)
 	{
+		printf("Calibration ended successfully: %d\n", nId);
 		sendMessage(3,5,nId);
 		skeletons[nId - 1] = As3Skeleton();
 		userGenerator.GetSkeletonCap().StartTracking(nId);
 	}
 	else
 	{
+		printf("Calibration ended unsuccessfully: %d\n", nId);
 		sendMessage(3,6,nId);
 		if (needPose)
 		{
