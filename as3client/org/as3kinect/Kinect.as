@@ -30,8 +30,14 @@ package org.as3kinect
 	import flash.text.TextField;
 	import flash.utils.ByteArray;
 	
+	import org.as3kinect.data.ColorBuffer;
+	import org.as3kinect.data.DepthBitmapBuffer;
+	import org.as3kinect.data.DepthBuffer;
+	import org.as3kinect.data.SkeletonBuffer;
+	import org.as3kinect.data.UserBuffer;
 	import org.as3kinect.events.KinectEvent;
 	import org.as3kinect.events.KinectSocketEvent;
+	import org.as3kinect.util.Logger;
 
 	public class Kinect extends EventDispatcher
 	{

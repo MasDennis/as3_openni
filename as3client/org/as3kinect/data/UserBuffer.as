@@ -1,5 +1,8 @@
-package org.as3kinect
+package org.as3kinect.data
 {
+	import org.as3kinect.Kinect;
+	import org.as3kinect.KinectSocket;
+
 	public class UserBuffer extends KinectDataBuffer
 	{
 		public function UserBuffer(socket:KinectSocket)

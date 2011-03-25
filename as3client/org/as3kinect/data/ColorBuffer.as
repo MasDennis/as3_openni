@@ -1,5 +1,8 @@
-package org.as3kinect
+package org.as3kinect.data
 {
+	import org.as3kinect.Kinect;
+	import org.as3kinect.KinectSocket;
+
 	public class ColorBuffer extends KinectDataBuffer
 	{
 		public function ColorBuffer(socket:KinectSocket)

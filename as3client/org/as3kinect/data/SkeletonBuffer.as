@@ -24,10 +24,12 @@
  * either License.
  */
 
-package org.as3kinect
+package org.as3kinect.data
 {
 	import flash.utils.ByteArray;
 	
+	import org.as3kinect.Kinect;
+	import org.as3kinect.KinectSocket;
 	import org.as3kinect.objects.Skeleton3D;
 
 	public class SkeletonBuffer extends KinectDataBuffer

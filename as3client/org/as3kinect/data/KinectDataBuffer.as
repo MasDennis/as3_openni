@@ -1,6 +1,8 @@
-package org.as3kinect
+package org.as3kinect.data
 {
 	import flash.utils.ByteArray;
+	
+	import org.as3kinect.KinectSocket;
 
 	public class KinectDataBuffer
 	{

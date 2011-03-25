@@ -24,7 +24,7 @@
 * either License.
 */
 
-package org.as3kinect
+package org.as3kinect.util
 {
 	import flash.text.TextField;
 
