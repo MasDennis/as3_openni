@@ -1,5 +1,5 @@
 ﻿/*
- * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+ * This file is part of the AS3Kinect Project. http://www.Kinect.org
  *
  * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.

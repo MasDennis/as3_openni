@@ -4,13 +4,15 @@ package org.as3kinect.objects
 
 	public class Joint3D
 	{
+		public var name			: String;
 		public var position 	: Point3D;
 		public var rotationX 	: Point3D;
 		public var rotationY 	: Point3D;
 		public var rotationZ 	: Point3D;
 		
-		public function Joint3D()
+		public function Joint3D( name : String )
 		{
+			this.name	= name;
 			position 	= new Point3D();
 			rotationX 	= new Point3D();
 			rotationY 	= new Point3D();

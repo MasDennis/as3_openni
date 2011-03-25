@@ -1,5 +1,5 @@
 ﻿/*
- * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+ * This file is part of the AS3Kinect Project. http://www.Kinect.org
  *
  * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
@@ -30,51 +30,64 @@ package org.as3kinect
 	import flash.text.TextField;
 	import flash.utils.ByteArray;
 	
-	import org.as3kinect.events.AS3KinectSocketEvent;
-	import org.as3kinect.events.AS3KinectWrapperEvent;
+	import org.as3kinect.events.KinectEvent;
+	import org.as3kinect.events.KinectSocketEvent;
 
-	public class AS3KinectWrapper extends EventDispatcher
+	public class Kinect extends EventDispatcher
 	{
-
-		private var socket 			: AS3KinectSocket;
+		public static const SUCCESS : int = 0;
+		public static const ERROR : int = -1;
+		
+		public static const SERVER_IP : String = "localhost";
+		public static const SOCKET_PORT : int = 6001;
+		
+		public static const CAMERA_ID : int = 0;
+		public static const MOTOR_ID : int = 1;
+		public static const MIC_ID : int = 2;
+		
+		public static const GET_DEPTH : int = 0;
+		public static const GET_RGB : int = 1;
+		public static const GET_SKEL : int = 2;
+		public static const GET_DEPTH_IMAGE : int = 3;
+		public static const UPDATE_USER_GENERATOR : int = 4;
+		
+		public static const IMG_WIDTH : int = 640;
+		public static const IMG_HEIGHT : int = 480;
+		
+		public static const RAW_IMG_SIZE : int = IMG_WIDTH * IMG_HEIGHT * 4;
+		public static const DATA_IN_SIZE : int = 3 * 2 + 3 * 8;
+		public static const COMMAND_SIZE : int = 8;		
+		
+		private var socket 			: KinectSocket;
 		private var data 			: ByteArray;
 		private var userId 			: Number;
 
-		public var depthBuffer 		: AS3KinectDepth;
-		public var depthImageBuffer	: AS3KinectDepthImage;
-		public var skeletonBuffer 	: AS3KinectSkeleton;
-		public var colorBuffer		: AS3KinectColor;
+		public var depthBuffer 		: DepthBuffer;
+		public var depthBitmapBuffer: DepthBitmapBuffer;
+		public var skeletonBuffer 	: SkeletonBuffer;
+		public var colorBuffer		: ColorBuffer;
+		public var userBuffer		: UserBuffer;
 
-		public function AS3KinectWrapper()
+		public function Kinect()
 		{
-			socket = new AS3KinectSocket();
-			socket.connect( AS3Kinect.SERVER_IP, AS3Kinect.SOCKET_PORT );
-			socket.addEventListener( AS3KinectSocketEvent.ON_DATA, dataReceivedHandler );
+			socket = new KinectSocket();
+			socket.connect( Kinect.SERVER_IP, Kinect.SOCKET_PORT );
+			socket.addEventListener( KinectSocketEvent.ON_DATA, dataReceivedHandler );
 
-			depthBuffer = new AS3KinectDepth( socket );
-			depthImageBuffer = new AS3KinectDepthImage( socket );
-			skeletonBuffer = new AS3KinectSkeleton( socket );
-			colorBuffer = new AS3KinectColor( socket );
+			depthBuffer = new DepthBuffer( socket );
+			depthBitmapBuffer = new DepthBitmapBuffer( socket );
+			skeletonBuffer = new SkeletonBuffer( socket );
+			colorBuffer = new ColorBuffer( socket );
+			userBuffer = new UserBuffer( socket );
 
 			data = new ByteArray();
 		}
 		
-		public function updateUserGenerator() : void
-		{
-			data.clear();
-			data.writeByte( AS3Kinect.CAMERA_ID );
-			data.writeByte( AS3Kinect.UPDATE_USER_GENERATOR );
-			data.writeInt( 0 );
-			if ( socket.sendCommand( data ) != AS3Kinect.SUCCESS )
-			{
-				trace( 'Data was not complete' );
-			}
-		}
-		
 		public function destroy() : void
 		{
-			socket.removeEventListener( AS3KinectSocketEvent.ON_DATA, dataReceivedHandler );
-			socket.close();
+			socket.removeEventListener( KinectSocketEvent.ON_DATA, dataReceivedHandler );
+			socket.destroy();
+			socket = null;
 		}
 
 		/*
@@ -99,7 +112,7 @@ package org.as3kinect
 		 *  			6 -> Calibration failed for user
 		 *
 		 */
-		private function dataReceivedHandler( event : AS3KinectSocketEvent ) : void
+		private function dataReceivedHandler( event : KinectSocketEvent ) : void
 		{
 			// Send ByteArray to position 0
 			event.data.buffer.position = 0;
@@ -110,29 +123,29 @@ package org.as3kinect
 					switch ( event.data.second )
 					{
 						case 0: //Depth received
-							var depthEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_DEPTH );
+							var depthEvent : KinectEvent = new KinectEvent( KinectEvent.ON_DEPTH );
 							depthEvent.depthBuffer = event.data.buffer;
 							dispatchEvent( depthEvent );
 							depthBuffer.busy = false;
 							break;
 						case 1: //Video received
-							var colorEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_COLOR );
+							var colorEvent : KinectEvent = new KinectEvent( KinectEvent.ON_COLOR );
 							colorEvent.colorBuffer = event.data.buffer;
 							dispatchEvent( colorEvent );
 							colorBuffer.busy = false;
 							break;
 						case 2: //SKEL received
-							var skelEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_SKEL );
+							var skelEvent : KinectEvent = new KinectEvent( KinectEvent.ON_SKELETON );
 							skeletonBuffer.processSkeleton( event.data.buffer );
 							skelEvent.skeletons = skeletonBuffer.skeletons;
 							dispatchEvent( skelEvent );
 							skeletonBuffer.busy = false;
 							break;
 						case 3: //Depth image received
-							var depthImageEvent : AS3KinectWrapperEvent = new AS3KinectWrapperEvent( AS3KinectWrapperEvent.ON_DEPTH_IMAGE );
-							depthImageEvent.depthImageBuffer = event.data.buffer;
+							var depthImageEvent : KinectEvent = new KinectEvent( KinectEvent.ON_DEPTH_BITMAP );
+							depthImageEvent.DepthBitmapBuffer = event.data.buffer;
 							dispatchEvent( depthImageEvent );
-							depthImageBuffer.busy = false;
+							depthBitmapBuffer.busy = false;
 							break;
 					}
 					break;
@@ -146,14 +159,14 @@ package org.as3kinect
 						case 0: //Debug received
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, event.data.buffer.toString());
+								Logger.log( Logger.DEBUG, event.data.buffer.toString());
 							}
 							break;
 						case 1: //Got user
 							userId = event.data.buffer.readInt();
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Got user: " + userId );
+								Logger.log( Logger.DEBUG, "Got user: " + userId );
 							}
 							break;
 						case 2: //Lost user
@@ -161,21 +174,21 @@ package org.as3kinect
 							skeletonBuffer.trackedUsers.pop();
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Lost user: " + userId );
+								Logger.log( Logger.DEBUG, "Lost user: " + userId );
 							}
 							break;
 						case 3: //Pose detected
 							userId = event.data.buffer.readInt();
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Pose detected for user: " + userId );
+								Logger.log( Logger.DEBUG, "Pose detected for user: " + userId );
 							}
 							break;
 						case 4: //Calibrating
 							userId = event.data.buffer.readInt();
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibrating user: " + userId );
+								Logger.log( Logger.DEBUG, "Calibrating user: " + userId );
 							}
 							break;
 						case 5: //Calibration complete
@@ -183,14 +196,14 @@ package org.as3kinect
 							skeletonBuffer.trackedUsers.push( userId );
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibration complete for user: " + userId );
+								Logger.log( Logger.DEBUG, "Calibration complete for user: " + userId );
 							}
 							break;
 						case 6: //Calibration failed
 							userId = event.data.buffer.readInt();
 							CONFIG::debugging
 							{
-								AS3KinectLogger.log( AS3KinectLogger.DEBUG, "Calibration failed for user: " + userId );
+								Logger.log( Logger.DEBUG, "Calibration failed for user: " + userId );
 							}
 							break;
 					}
@@ -205,7 +218,7 @@ package org.as3kinect
 		 */
 		public function set logConsole( txt : TextField ) : void
 		{
-			AS3KinectLogger.textField = txt;
+			Logger.textField = txt;
 		}
 	}
 }

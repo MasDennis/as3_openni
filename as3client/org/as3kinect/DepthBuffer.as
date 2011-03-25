@@ -1,5 +1,5 @@
 ﻿/*
- * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+ * This file is part of the AS3Kinect Project. http://www.Kinect.org
  *
  * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
@@ -26,29 +26,31 @@
 
 package org.as3kinect
 {
-	public class AS3Kinect
+	import flash.utils.ByteArray;
+
+	public class DepthBuffer extends KinectDataBuffer
 	{
-		public static const SUCCESS : int = 0;
-		public static const ERROR : int = -1;
+		public function DepthBuffer( socket : KinectSocket )
+		{
+			super( socket );
+		}
 
-		public static const SERVER_IP : String = "localhost";
-		public static const SOCKET_PORT : int = 6001;
-
-		public static const CAMERA_ID : int = 0;
-		public static const MOTOR_ID : int = 1;
-		public static const MIC_ID : int = 2;
-
-		public static const GET_DEPTH : int = 0;
-		public static const GET_RGB : int = 1;
-		public static const GET_SKEL : int = 2;
-		public static const GET_DEPTH_IMAGE : int = 3;
-		public static const UPDATE_USER_GENERATOR : int = 4;
-
-		public static const IMG_WIDTH : int = 640;
-		public static const IMG_HEIGHT : int = 480;
-
-		public static const RAW_IMG_SIZE : int = IMG_WIDTH * IMG_HEIGHT * 4;
-		public static const DATA_IN_SIZE : int = 3 * 2 + 3 * 8;
-		public static const COMMAND_SIZE : int = 6;
+		/*
+		 * Tell server to send the latest depth frame
+		 * Note: We should lock the command while we are waiting for the data to avoid lag
+		 */
+		override public function update() : void
+		{
+			super.update();
+			data.clear();
+			data.writeByte( Kinect.CAMERA_ID );
+			data.writeByte( Kinect.GET_DEPTH );
+			data.writeInt( 0 );
+			data.writeShort( 0 );
+			if ( socket.sendCommand( data ) != Kinect.SUCCESS )
+			{
+				throw new Error( 'Data was not complete' );
+			}
+		}
 	}
 }

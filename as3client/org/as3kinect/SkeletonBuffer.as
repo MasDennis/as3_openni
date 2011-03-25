@@ -1,5 +1,5 @@
 ﻿/*
- * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+ * This file is part of the AS3Kinect Project. http://www.Kinect.org
  *
  * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
@@ -27,29 +27,52 @@
 package org.as3kinect
 {
 	import flash.utils.ByteArray;
+	
+	import org.as3kinect.objects.Skeleton3D;
 
-	public class AS3KinectDepth extends AS3KinectDataBuffer
+	public class SkeletonBuffer extends KinectDataBuffer
 	{
-		public function AS3KinectDepth( socket : AS3KinectSocket )
+		private var skelArray 	: Vector.<Skeleton3D>;
+		private var tmpSkel 	: Skeleton3D;
+
+		public var trackedUsers : Array;
+
+		public function SkeletonBuffer( socket : KinectSocket )
 		{
 			super( socket );
+			skelArray = new Vector.<Skeleton3D>();
+			tmpSkel = new Skeleton3D();
+			trackedUsers = new Array();
 		}
 
 		/*
-		 * Tell server to send the latest depth frame
+		 * Tell server to send the latest skeleton data
 		 * Note: We should lock the command while we are waiting for the data to avoid lag
 		 */
 		override public function update() : void
 		{
 			super.update();
+			if( trackedUsers.length == 0 ) return;
 			data.clear();
-			data.writeByte( AS3Kinect.CAMERA_ID );
-			data.writeByte( AS3Kinect.GET_DEPTH );
+			data.writeByte( Kinect.CAMERA_ID );
+			data.writeByte( Kinect.GET_SKEL );
 			data.writeInt( 0 );
-			if ( socket.sendCommand( data ) != AS3Kinect.SUCCESS )
+			data.writeShort( 0 );
+			if ( socket.sendCommand( data ) != Kinect.SUCCESS )
 			{
 				throw new Error( 'Data was not complete' );
 			}
+		}
+
+		public function processSkeleton( bArray : ByteArray ) : void
+		{
+			tmpSkel.updateFromBytes( bArray );
+			skelArray[ tmpSkel.userId - 1 ] = tmpSkel;
+		}
+
+		public function get skeletons() : Vector.<Skeleton3D>
+		{
+			return skelArray;
 		}
 	}
 }

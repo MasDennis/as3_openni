@@ -1,5 +1,5 @@
 /*
-* This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+* This file is part of the AS3Kinect Project. http://www.Kinect.org
 *
 * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
 * for details.
@@ -28,7 +28,7 @@ package org.as3kinect
 {
 	import flash.text.TextField;
 
-	public class AS3KinectLogger
+	public class Logger
 	{
 		public static const INFO : String = "Info";
 		public static const ERROR : String = "Error";
@@ -36,7 +36,7 @@ package org.as3kinect
 
 		public static var textField : TextField;
 
-		public function AS3KinectLogger()
+		public function Logger()
 		{
 		}
 

@@ -31,20 +31,20 @@ package org.as3kinect.events
 	
 	import org.as3kinect.objects.Skeleton3D;
 
-	public class AS3KinectWrapperEvent extends Event
+	public class KinectEvent extends Event
 	{
 		public static const ON_DEPTH 		: String = "onDepth";
-		public static const ON_DEPTH_IMAGE 	: String = "onDepthImage";
+		public static const ON_DEPTH_BITMAP : String = "onDepthImage";
 		public static const ON_DEBUG 		: String = "onDebug";
-		public static const ON_SKEL 		: String = "onSkel";
+		public static const ON_SKELETON 	: String = "onSkel";
 		public static const ON_COLOR		: String = "onColor";
 
 		public var depthBuffer 		: ByteArray;
-		public var depthImageBuffer	: ByteArray;
+		public var DepthBitmapBuffer	: ByteArray;
 		public var colorBuffer 		: ByteArray;
 		public var skeletons 		: Vector.<Skeleton3D>;
 
-		public function AS3KinectWrapperEvent( type : String )
+		public function KinectEvent( type : String )
 		{
 			super( type );
 		}

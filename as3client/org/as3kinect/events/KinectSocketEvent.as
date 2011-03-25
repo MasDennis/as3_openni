@@ -28,7 +28,7 @@ package org.as3kinect.events
 {
 	import flash.events.Event;
 
-	public class AS3KinectSocketEvent extends Event
+	public class KinectSocketEvent extends Event
 	{
 		public static const ON_CONNECT 		: String = "onConnect";
 		public static const ON_DATA 		: String = "onData";
@@ -36,7 +36,7 @@ package org.as3kinect.events
 
 		public var data : *;
 
-		public function AS3KinectSocketEvent( type : String, data : * )
+		public function KinectSocketEvent( type : String, data : * )
 		{
 			this.data = data;
 			super( type );

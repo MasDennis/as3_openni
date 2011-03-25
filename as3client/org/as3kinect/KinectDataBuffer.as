@@ -2,13 +2,13 @@ package org.as3kinect
 {
 	import flash.utils.ByteArray;
 
-	public class AS3KinectDataBuffer
+	public class KinectDataBuffer
 	{
-		protected var socket 		: AS3KinectSocket;
+		protected var socket 		: KinectSocket;
 		protected var data			: ByteArray;
 		protected var _busy			: Boolean;
 		
-		public function AS3KinectDataBuffer( socket : AS3KinectSocket )
+		public function KinectDataBuffer( socket : KinectSocket )
 		{
 			this.socket = socket;
 			this.data = new ByteArray();

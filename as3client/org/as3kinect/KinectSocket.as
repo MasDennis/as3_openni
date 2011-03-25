@@ -1,5 +1,5 @@
 ﻿/*
- * This file is part of the AS3Kinect Project. http://www.AS3Kinect.org
+ * This file is part of the AS3Kinect Project. http://www.Kinect.org
  *
  * Copyright (c) 2010 individual AS3Kinect contributors. See the CONTRIB file
  * for details.
@@ -34,15 +34,13 @@ package org.as3kinect
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
-	import org.as3kinect.events.AS3KinectSocketEvent;
+	import org.as3kinect.events.KinectSocketEvent;
 
 	/**
-	 * AS3KinectSocket class recieves Kinect data from the AS3Kinect driver.
+	 * KinectSocket class recieves Kinect data from the AS3Kinect driver.
 	 */
-	public class AS3KinectSocket extends EventDispatcher
+	public class KinectSocket extends EventDispatcher
 	{
-		private static var instanceCount : uint = 0;
-		
 		private var firstByte : Number;
 		private var secondByte : Number;
 		private var packetSize : Number;
@@ -51,11 +49,8 @@ package org.as3kinect
 		private var dataObj : Object;
 		private var port : Number;
 
-		public function AS3KinectSocket()
+		public function KinectSocket()
 		{
-			if( instanceCount != 0 )
-				throw new Error("Only one instance of AS3KinectSocket is allowed");
-			instanceCount++;
 			socket = new Socket();
 			buffer = new ByteArray();
 			dataObj = new Object();
@@ -72,7 +67,7 @@ package org.as3kinect
 			if ( !this.connected )
 				socket.connect( host, port );
 			else
-				dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_CONNECT, null ));
+				dispatchEvent( new KinectSocketEvent( KinectSocketEvent.ON_CONNECT, null ));
 		}
 
 		public function get connected() : Boolean
@@ -80,28 +75,32 @@ package org.as3kinect
 			return socket.connected;
 		}
 
-		public function close() : void
+		public function destroy() : void
 		{
 			socket.close();
+			socket.removeEventListener( ProgressEvent.SOCKET_DATA, onSocketData );
+			socket.removeEventListener( IOErrorEvent.IO_ERROR, onSocketError );
+			socket.removeEventListener( Event.CONNECT, onSocketConnect );
+			socket = null;
 		}
 
 		public function sendCommand( data : ByteArray ) : int
 		{
-			if ( data.length == AS3Kinect.COMMAND_SIZE )
+			if ( data.length == Kinect.COMMAND_SIZE )
 			{
 				try {
-					socket.writeBytes( data, 0, AS3Kinect.COMMAND_SIZE );
+					socket.writeBytes( data, 0, Kinect.COMMAND_SIZE );
 					socket.flush();
 				} catch( e : Error ) {
 					trace("Operation attempted on invalid socket");
-					return AS3Kinect.ERROR;
+					return Kinect.ERROR;
 				}
-				return AS3Kinect.SUCCESS;
+				return Kinect.SUCCESS;
 			}
 			else
 			{
-				throw new Error( 'Incorrect data size (' + data.length + '). Expected: ' + AS3Kinect.COMMAND_SIZE );
-				return AS3Kinect.ERROR;
+				throw new Error( 'Incorrect data size (' + data.length + '). Expected: ' + Kinect.COMMAND_SIZE );
+				return Kinect.ERROR;
 			}
 		}
 
@@ -125,19 +124,19 @@ package org.as3kinect
 					dataObj.second = secondByte;
 					dataObj.buffer = buffer;
 					packetSize = 0;
-					dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_DATA, dataObj ));
+					dispatchEvent( new KinectSocketEvent( KinectSocketEvent.ON_DATA, dataObj ));
 				}
 			}
 		}
 
 		private function onSocketError( event : IOErrorEvent ) : void
 		{
-			dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_ERROR, null ));
+			dispatchEvent( new KinectSocketEvent( KinectSocketEvent.ON_ERROR, null ));
 		}
 
 		private function onSocketConnect( event : Event ) : void
 		{
-			dispatchEvent( new AS3KinectSocketEvent( AS3KinectSocketEvent.ON_CONNECT, null ));
+			dispatchEvent( new KinectSocketEvent( KinectSocketEvent.ON_CONNECT, null ));
 		}
 	}
 }
